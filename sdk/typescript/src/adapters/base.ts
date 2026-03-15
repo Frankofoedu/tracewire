@@ -1,6 +1,6 @@
 import type { TraceContext } from "../trace.js";
 
-export interface WaypointAdapter {
+export interface TracewireAdapter {
   onLlmStart(prompt: string, metadata?: Record<string, unknown>): void;
   onLlmEnd(response: string, latencyMs?: number, cost?: number): void;
   onToolStart(toolName: string, input?: unknown): void;
@@ -8,7 +8,7 @@ export interface WaypointAdapter {
   onError(error: Error): void;
 }
 
-export function createAdapter(ctx: TraceContext): WaypointAdapter {
+export function createAdapter(ctx: TraceContext): TracewireAdapter {
   return {
     onLlmStart(prompt, metadata) {
       ctx.logEvent("Prompt", { prompt, ...metadata });

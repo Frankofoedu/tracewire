@@ -1,14 +1,14 @@
 import type { CreateEventRequest } from "./models.js";
-import { WaypointClient } from "./client.js";
+import { TracewireClient } from "./client.js";
 
 export class EventBuffer {
   private buffer: CreateEventRequest[] = [];
   private maxSize: number;
   private flushInterval: number;
-  private client: WaypointClient;
+  private client: TracewireClient;
   private timer: ReturnType<typeof setInterval> | null = null;
 
-  constructor(client: WaypointClient, maxSize = 1000, flushIntervalMs = 1000) {
+  constructor(client: TracewireClient, maxSize = 1000, flushIntervalMs = 1000) {
     this.client = client;
     this.maxSize = maxSize;
     this.flushInterval = flushIntervalMs;
@@ -39,7 +39,7 @@ export class EventBuffer {
       try {
         await this.client.createEvent(event);
       } catch (err) {
-        console.error("Waypoint: failed to flush event", err);
+        console.error("Tracewire: failed to flush event", err);
       }
     }
   }

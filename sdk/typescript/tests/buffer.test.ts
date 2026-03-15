@@ -1,16 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EventBuffer } from "../src/buffer";
-import type { WaypointClient } from "../src/client";
+import type { TracewireClient } from "../src/client";
 import type { CreateEventRequest } from "../src/models";
 
-function mockClient(): WaypointClient {
+function mockClient(): TracewireClient {
   return {
     createTrace: vi.fn(),
     createEvent: vi.fn().mockResolvedValue({}),
     getTrace: vi.fn(),
     pauseEvent: vi.fn(),
     resumeEvent: vi.fn(),
-  } as unknown as WaypointClient;
+  } as unknown as TracewireClient;
 }
 
 describe("EventBuffer", () => {

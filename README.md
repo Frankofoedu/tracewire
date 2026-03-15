@@ -1,4 +1,4 @@
-# Waypoint
+# Tracewire
 
 **Navigate your AI agent's path.**
 
@@ -28,13 +28,13 @@ docker compose up
 ## Project Structure
 
 ```
-waypoint/
-├── backend/          .NET 9 API + EF Core + PostgreSQL
-├── sdk/python/       Python SDK with framework adapters
-├── sdk/typescript/   TypeScript SDK with framework adapters
-├── sdk/dotnet/       .NET SDK with Semantic Kernel adapter
-├── frontend/         React + Vite SPA with DAG visualization
-└── docker-compose.yml
+Tracewire/
+ÃƒÂ¢Ã¢â‚¬ÂÃ…â€œÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ backend/          .NET 9 API + EF Core + PostgreSQL
+ÃƒÂ¢Ã¢â‚¬ÂÃ…â€œÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ sdk/python/       Python SDK with framework adapters
+ÃƒÂ¢Ã¢â‚¬ÂÃ…â€œÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ sdk/typescript/   TypeScript SDK with framework adapters
+ÃƒÂ¢Ã¢â‚¬ÂÃ…â€œÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ sdk/dotnet/       .NET SDK with Semantic Kernel adapter
+ÃƒÂ¢Ã¢â‚¬ÂÃ…â€œÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ frontend/         React + Vite SPA with DAG visualization
+ÃƒÂ¢Ã¢â‚¬ÂÃ¢â‚¬ÂÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ docker-compose.yml
 ```
 
 ## Development
@@ -42,7 +42,7 @@ waypoint/
 ### Backend
 ```bash
 cd backend
-dotnet run --project src/Waypoint.Api
+dotnet run --project src/Tracewire.Api
 ```
 
 ### Frontend
@@ -74,33 +74,33 @@ dotnet test
 
 ## SDK Usage
 
-### Python — Instrument an Agent
+### Python ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Instrument an Agent
 
 ```python
-from waypoint import WaypointClient, trace
+from tracewire import TracewireClient, trace
 
-client = WaypointClient(base_url="http://localhost:5185", api_key="your-key")
+client = TracewireClient(base_url="http://localhost:5185", api_key="your-key")
 
 async with trace(client, agent_name="my-agent") as t:
     await t.add_event(event_type="Prompt", payload='{"prompt": "hello"}')
     await t.add_event(event_type="ToolCall", payload='{"tool": "search"}')
 ```
 
-### Python — LangChain Auto-Instrumentation
+### Python ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â LangChain Auto-Instrumentation
 
 ```python
-from waypoint.adapters.langchain import WaypointCallbackHandler
+from tracewire.adapters.langchain import TracewireCallbackHandler
 
-handler = WaypointCallbackHandler(client=client)
+handler = TracewireCallbackHandler(client=client)
 chain.invoke({"input": "hello"}, config={"callbacks": [handler]})
 ```
 
-### TypeScript — Instrument an Agent
+### TypeScript ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Instrument an Agent
 
 ```typescript
-import { WaypointClient, trace } from "waypoint-sdk";
+import { TracewireClient, trace } from "Tracewire-sdk";
 
-const client = new WaypointClient({
+const client = new TracewireClient({
   baseUrl: "http://localhost:5185",
   apiKey: "your-key",
 });
@@ -111,12 +111,12 @@ await trace(client, "my-agent", async (t) => {
 });
 ```
 
-### .NET — Instrument an Agent
+### .NET ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Instrument an Agent
 
 ```csharp
-using Waypoint.Sdk;
+using Tracewire.Sdk;
 
-await using var t = await WaypointTrace.StartAsync("my-agent", apiKey: "your-key");
+await using var t = await TracewireTrace.StartAsync("my-agent", apiKey: "your-key");
 
 t.LogEvent(EventType.Prompt, new { role = "user", content = "hello" });
 t.LogEvent(EventType.ModelResponse, new { content = response }, latencyMs: 450);

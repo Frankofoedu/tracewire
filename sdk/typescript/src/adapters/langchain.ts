@@ -1,5 +1,5 @@
 import type { TraceContext } from "../trace.js";
-import { createAdapter, type WaypointAdapter } from "./base.js";
+import { createAdapter, type TracewireAdapter } from "./base.js";
 
 export function createLangChainCallback(ctx: TraceContext) {
   const adapter = createAdapter(ctx);

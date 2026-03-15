@@ -5,7 +5,7 @@ export default function Layout() {
     <div className="min-h-screen flex flex-col">
       <header className="border-b border-gray-800 px-6 py-3 flex items-center gap-4">
         <Link to="/" className="text-xl font-bold text-blue-400 hover:text-blue-300">
-          ◆ Waypoint
+          â—† Tracewire
         </Link>
         <nav className="flex gap-4 ml-8 text-sm text-gray-400">
           <Link to="/" className="hover:text-gray-200">Traces</Link>

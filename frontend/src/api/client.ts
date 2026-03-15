@@ -1,7 +1,7 @@
 import type { TraceDetail, TracesListResponse, TraceStatus, ReplayResponse } from "../types";
 
 const BASE = "/v1";
-const API_KEY = localStorage.getItem("waypoint_api_key") ?? "";
+const API_KEY = localStorage.getItem("Tracewire_api_key") ?? "";
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const resp = await fetch(`${BASE}${path}`, {

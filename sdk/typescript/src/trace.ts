@@ -1,16 +1,16 @@
 import type { CreateEventRequest, EventType } from "./models.js";
-import { WaypointClient } from "./client.js";
+import { TracewireClient } from "./client.js";
 import { EventBuffer } from "./buffer.js";
 
 export class TraceContext {
-  private client: WaypointClient;
+  private client: TracewireClient;
   private buffer: EventBuffer;
   readonly traceId: string;
   private snapshot: boolean;
   private lastEventId: string | undefined;
   private depth = 0;
 
-  constructor(client: WaypointClient, buffer: EventBuffer, traceId: string, snapshot = false) {
+  constructor(client: TracewireClient, buffer: EventBuffer, traceId: string, snapshot = false) {
     this.client = client;
     this.buffer = buffer;
     this.traceId = traceId;
@@ -79,7 +79,7 @@ export async function trace<T>(
   fn: (ctx: TraceContext) => Promise<T>,
   options?: { baseUrl?: string; apiKey?: string; snapshot?: boolean },
 ): Promise<T> {
-  const client = new WaypointClient(options?.baseUrl, options?.apiKey);
+  const client = new TracewireClient(options?.baseUrl, options?.apiKey);
   const buffer = new EventBuffer(client);
   buffer.start();
 

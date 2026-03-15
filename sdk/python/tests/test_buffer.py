@@ -1,6 +1,6 @@
 import pytest
-from waypoint.buffer import EventBuffer
-from waypoint.models import CreateEventRequest, EventType
+from tracewire.buffer import EventBuffer
+from tracewire.models import CreateEventRequest, EventType
 from unittest.mock import AsyncMock, MagicMock
 
 

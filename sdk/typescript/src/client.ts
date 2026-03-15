@@ -6,7 +6,7 @@ import type {
   TraceResponse,
 } from "./models.js";
 
-export class WaypointClient {
+export class TracewireClient {
   private baseUrl: string;
   private apiKey: string;
 
@@ -25,7 +25,7 @@ export class WaypointClient {
       },
     });
     if (!resp.ok) {
-      throw new Error(`Waypoint API error: ${resp.status} ${resp.statusText}`);
+      throw new Error(`Tracewire API error: ${resp.status} ${resp.statusText}`);
     }
     return resp.json() as Promise<T>;
   }

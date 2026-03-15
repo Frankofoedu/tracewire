@@ -26,7 +26,7 @@ export default function TracesListPage() {
     <div>
       <h1 className="text-2xl font-bold mb-6">Traces</h1>
       {traces.length === 0 ? (
-        <p className="text-gray-500">No traces yet. Start an agent with the Waypoint SDK to see traces here.</p>
+        <p className="text-gray-500">No traces yet. Start an agent with the Tracewire SDK to see traces here.</p>
       ) : (
         <table className="w-full text-sm">
           <thead>
@@ -54,7 +54,7 @@ export default function TracesListPage() {
                 <td className="py-3 text-gray-400">
                   {t.endTime
                     ? `${((new Date(t.endTime).getTime() - new Date(t.startTime).getTime()) / 1000).toFixed(1)}s`
-                    : "—"}
+                    : "â€”"}
                 </td>
               </tr>
             ))}

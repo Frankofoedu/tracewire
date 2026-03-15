@@ -1,7 +1,7 @@
 {
-  "name": "waypoint-sdk",
+  "name": "Tracewire-sdk",
   "version": "0.1.0",
-  "description": "Waypoint SDK for AI agent observability and control",
+  "description": "Tracewire SDK for AI agent observability and control",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",

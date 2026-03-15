@@ -1,4 +1,4 @@
-// Waypoint .NET SDK Example — Simulated AI Agent
+// Tracewire .NET SDK Example â€” Simulated AI Agent
 //
 // Shows how a .NET developer would instrument their agent.
 //
@@ -8,11 +8,11 @@
 //
 // Or just: dotnet script examples/demo_agent.csx
 
-using Waypoint.Sdk;
+using Tracewire.Sdk;
 
 var apiKey = "wp_dev_testkey_123";
 
-await using var t = await WaypointTrace.StartAsync(
+await using var t = await TracewireTrace.StartAsync(
     agentName: "research-agent",
     apiKey: apiKey,
     metadata: new Dictionary<string, object>
@@ -34,10 +34,10 @@ var plan = "I'll search for recent quantum computing breakthroughs and summarize
 t.LogEvent(EventType.ModelResponse, new { role = "assistant", content = plan }, latencyMs: 300, cost: 0.003m);
 Console.WriteLine($"[ModelResponse]  {plan}");
 
-// Step 3: Tool call — web search
+// Step 3: Tool call â€” web search
 await Task.Delay(500);
 t.LogEvent(EventType.ToolCall, new { tool = "web_search", query = "quantum computing 2026", resultCount = 3 }, latencyMs: 500);
-Console.WriteLine($"[ToolCall]       web_search → 3 results");
+Console.WriteLine($"[ToolCall]       web_search â†’ 3 results");
 
 // Step 4: LLM summarizes
 await Task.Delay(400);
@@ -45,9 +45,9 @@ var summary = "Top 3: Error-corrected qubits, quantum drug discovery, room-temp 
 t.LogEvent(EventType.ModelResponse, new { role = "assistant", content = summary }, latencyMs: 400, cost: 0.005m);
 Console.WriteLine($"[ModelResponse]  {summary}");
 
-// Step 5: Side-effect — send email
+// Step 5: Side-effect â€” send email
 t.RegisterSideEffect("email", new { to = "team@example.com", subject = "Research Summary" });
-Console.WriteLine($"[ToolCall]       send_email ⚠️  side-effect registered");
+Console.WriteLine($"[ToolCall]       send_email âš ï¸  side-effect registered");
 
 // Step 6: Save to memory
 t.LogEvent(EventType.MemoryWrite, new { key = "research:quantum", value = summary });

@@ -1,12 +1,12 @@
-# Waypoint — Product Requirements Document (v2.3)
+# Tracewire â€” Product Requirements Document (v2.3)
 
-> See the original literate source at the repo root: `# Copilot-Friendly PRD — Waypoint v1.litcoffee`
+> See the original literate source at the repo root: `# Copilot-Friendly PRD â€” Tracewire v1.litcoffee`
 
-This document summarizes the product requirements for Waypoint — an AI agent observability and control platform.
+This document summarizes the product requirements for Tracewire â€” an AI agent observability and control platform.
 
 ## Vision
 
-Waypoint provides developers with a complete toolkit to **observe**, **replay**, and **control** AI agent executions. It captures every step an agent takes as a branching DAG (Directed Acyclic Graph), enables human-in-the-loop intervention, and flags side-effects when replaying from arbitrary points.
+Tracewire provides developers with a complete toolkit to **observe**, **replay**, and **control** AI agent executions. It captures every step an agent takes as a branching DAG (Directed Acyclic Graph), enables human-in-the-loop intervention, and flags side-effects when replaying from arbitrary points.
 
 ## Core Capabilities
 
@@ -65,7 +65,7 @@ Waypoint provides developers with a complete toolkit to **observe**, **replay**,
 
 ## Multi-Tenancy
 
-- Organizations → Workspaces → API Keys
+- Organizations â†’ Workspaces â†’ API Keys
 - API key auth with SHA256 hashing, scoped permissions
 - Workspace-level replay policy configuration
 

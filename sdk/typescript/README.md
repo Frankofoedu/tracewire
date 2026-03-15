@@ -1,19 +1,19 @@
-# Waypoint TypeScript SDK
+# Tracewire TypeScript SDK
 
-TypeScript SDK for [Waypoint](../../README.md) — AI agent observability and control.
+TypeScript SDK for [Tracewire](../../README.md) â€” AI agent observability and control.
 
 ## Installation
 
 ```bash
-npm install waypoint-sdk
+npm install Tracewire-sdk
 ```
 
 ## Quick Start
 
 ```typescript
-import { WaypointClient, trace } from "waypoint-sdk";
+import { TracewireClient, trace } from "Tracewire-sdk";
 
-const client = new WaypointClient({
+const client = new TracewireClient({
   baseUrl: "http://localhost:5185",
   apiKey: "your-key",
 });
@@ -42,9 +42,9 @@ await trace(client, "my-agent", async (t) => {
 ## LangChain Adapter
 
 ```typescript
-import { WaypointLangChainAdapter } from "waypoint-sdk/adapters/langchain";
+import { TracewireLangChainAdapter } from "Tracewire-sdk/adapters/langchain";
 
-const adapter = new WaypointLangChainAdapter(client);
+const adapter = new TracewireLangChainAdapter(client);
 const callbacks = adapter.createCallbacks();
 await chain.invoke({ input: "hello" }, { callbacks });
 ```

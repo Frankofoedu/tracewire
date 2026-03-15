@@ -1,5 +1,5 @@
 import pytest
-from waypoint.models import CreateEventRequest, EventType, TraceStatus
+from tracewire.models import CreateEventRequest, EventType, TraceStatus
 
 
 def test_trace_status_values():

@@ -1,6 +1,6 @@
-# Waypoint Python SDK
+# Tracewire Python SDK
 
-Python SDK for [Waypoint](../../README.md) — AI agent observability and control.
+Python SDK for [Tracewire](../../README.md) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â AI agent observability and control.
 
 ## Installation
 
@@ -17,9 +17,9 @@ pip install -e ".[dev]"         # Development dependencies
 ## Quick Start
 
 ```python
-from waypoint import WaypointClient, trace
+from tracewire import TracewireClient, trace
 
-client = WaypointClient(base_url="http://localhost:5185", api_key="your-key")
+client = TracewireClient(base_url="http://localhost:5185", api_key="your-key")
 
 async with trace(client, agent_name="my-agent") as t:
     await t.add_event(event_type="Prompt", payload='{"prompt": "hello"}')
@@ -40,9 +40,9 @@ async with trace(client, agent_name="my-agent") as t:
 ## LangChain Adapter
 
 ```python
-from waypoint.adapters.langchain import WaypointCallbackHandler
+from tracewire.adapters.langchain import TracewireCallbackHandler
 
-handler = WaypointCallbackHandler(client=client)
+handler = TracewireCallbackHandler(client=client)
 chain.invoke({"input": "hello"}, config={"callbacks": [handler]})
 ```
 
@@ -50,9 +50,9 @@ chain.invoke({"input": "hello"}, config={"callbacks": [handler]})
 
 | Adapter | Import |
 |---------|--------|
-| LangChain | `waypoint.adapters.langchain.WaypointCallbackHandler` |
-| AutoGen | `waypoint.adapters.autogen.WaypointAutoGenMiddleware` |
-| CrewAI | `waypoint.adapters.crewai.WaypointCrewCallback` |
+| LangChain | `Tracewire.adapters.langchain.TracewireCallbackHandler` |
+| AutoGen | `Tracewire.adapters.autogen.TracewireAutoGenMiddleware` |
+| CrewAI | `Tracewire.adapters.crewai.TracewireCrewCallback` |
 
 ## Development
 
