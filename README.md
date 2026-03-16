@@ -25,6 +25,7 @@ Found a bug at step 7 of a 20-step trace? Click that event, modify the payload, 
 
 - Replay from any event node with modified inputs
 - Automatic branch creation for A/B comparison
+- **SDK replay callbacks** — register `on_replay` handlers in your agent to react to replays in real-time via SSE
 - **Side-effect warnings**: Tracewire scans ancestor events and warns you about irreversible actions (emails sent, database writes, API calls) before you replay
 - Workspace-level replay policies (Warn / Block / Require Approval)
 
@@ -33,6 +34,7 @@ Found a bug at step 7 of a 20-step trace? Click that event, modify the payload, 
 Your agent is about to deploy to production. Should it? Tracewire lets agents pause and wait for human approval before executing high-stakes actions.
 
 - SDK calls `pause_for_human()` → agent blocks → reviewer sees approval panel
+- **Real-time SSE streaming** — decisions push to the SDK instantly via Server-Sent Events, no polling
 - Three decisions: **Approve**, **Reject**, or **Escalate**
 - Configurable timeout with fallback behavior (abort, continue, escalate)
 - Full audit trail with reviewer comments and timestamps
@@ -154,6 +156,23 @@ if decision == "approve":
     send_email(to="customer@example.com", body=draft)
 ```
 
+### Replay Callbacks (any SDK)
+
+```python
+# Python — react to replays in real-time
+t.on_replay(lambda branch, payload: print(f"Replaying on {branch}"))
+```
+
+```typescript
+// TypeScript — listen for replay events via SSE
+t.onReplay((branch, payload) => console.log(`Replaying on ${branch}`));
+```
+
+```csharp
+// .NET — register a replay handler
+t.OnReplay((branch, payload) => Console.WriteLine($"Replaying on {branch}"));
+```
+
 ## API Endpoints
 
 | Method | Path | Description |
@@ -166,6 +185,7 @@ if decision == "approve":
 | `POST` | `/v1/events/{id}/pause` | Pause for human-in-the-loop |
 | `POST` | `/v1/events/{id}/resume` | Resume with decision |
 | `POST` | `/v1/events/{id}/replay` | Replay from event (forks branch) |
+| `GET` | `/v1/traces/{id}/stream` | SSE stream for real-time HITL & replay notifications |
 
 ## Development
 
