@@ -56,21 +56,56 @@ export class TraceContext {
 
     await this.client.pauseEvent(eventId, timeout);
 
-    const deadline = Date.now() + timeout * 1000;
-    while (Date.now() < deadline) {
-      const traceData = await this.client.getTrace(this.traceId);
-      const event = traceData.events?.find((e) => e.id === eventId);
-      if (event?.hitlStatus === "Resumed") {
-        if (event.hitlDecision) {
-          const decision = JSON.parse(event.hitlDecision);
-          return decision.decision ?? "approve";
-        }
-        return "approve";
-      }
-      await new Promise((r) => setTimeout(r, 2000));
-    }
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeout * 1000);
 
-    return fallback;
+    try {
+      return await this.waitViaSse(eventId, controller.signal);
+    } catch {
+      return fallback;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  private async waitViaSse(eventId: string, signal: AbortSignal): Promise<string> {
+    const url = `${this.client.baseUrl}/v1/traces/${this.traceId}/stream?apiKey=${encodeURIComponent(this.client.apiKey)}`;
+    const resp = await fetch(url, { signal });
+    if (!resp.ok || !resp.body) throw new Error("SSE connection failed");
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        while (buffer.includes("\n\n")) {
+          const idx = buffer.indexOf("\n\n");
+          const message = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 2);
+
+          for (const line of message.split("\n")) {
+            if (line.startsWith("data: ")) {
+              const data = JSON.parse(line.slice(6));
+              if (data.eventId === eventId && data.status === "Resumed") {
+                if (data.decision) {
+                  const decision = JSON.parse(data.decision);
+                  return decision.decision ?? "approve";
+                }
+                return "approve";
+              }
+            }
+          }
+        }
+      }
+    } finally {
+      reader.releaseLock();
+    }
+    throw new Error("SSE stream ended without resume");
   }
 }
 

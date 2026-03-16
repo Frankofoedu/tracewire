@@ -53,3 +53,10 @@ export interface SideEffectWarning {
   sideEffects: string;
   timestamp: string;
 }
+
+export interface HitlNotification {
+  eventId: string;
+  traceId: string;
+  status: string;
+  decision?: string;
+}

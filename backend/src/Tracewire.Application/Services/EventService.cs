@@ -6,7 +6,7 @@ using Tracewire.Infrastructure;
 
 namespace Tracewire.Application.Services;
 
-public class EventService(TracewireDbContext db)
+public class EventService(TracewireDbContext db, HitlNotificationService notifications)
 {
     public async Task<EventResponse?> CreateAsync(CreateEventRequest request, Guid workspaceId)
     {
@@ -74,6 +74,8 @@ public class EventService(TracewireDbContext db)
         evt.HitlStatus = HitlStatus.Paused;
         evt.HitlTimeoutSeconds = request.TimeoutSeconds;
         await db.SaveChangesAsync();
+
+        notifications.Notify(new HitlNotification(evt.Id, evt.TraceId, "Paused", null));
         return true;
     }
 
@@ -92,6 +94,8 @@ public class EventService(TracewireDbContext db)
             resumed_at = DateTime.UtcNow
         });
         await db.SaveChangesAsync();
+
+        notifications.Notify(new HitlNotification(evt.Id, evt.TraceId, "Resumed", evt.HitlDecision));
         return true;
     }
 

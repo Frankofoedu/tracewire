@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getTrace } from "../api/client";
 import type { TraceDetail, TraceEvent } from "../types";
@@ -6,6 +6,7 @@ import DagViewer from "../components/dag/DagViewer";
 import Timeline from "../components/timeline/Timeline";
 import HitlPanel from "../components/hitl/HitlPanel";
 import ReplayControls from "../components/replay/ReplayControls";
+import { useHitlStream } from "../hooks/useHitlStream";
 
 const STATUS_COLORS: Record<string, string> = {
   Running: "text-yellow-400",
@@ -19,15 +20,17 @@ export default function TraceDetailPage() {
   const [selected, setSelected] = useState<TraceEvent | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loadTrace = () => {
+  const loadTrace = useCallback(() => {
     if (!traceId) return;
     getTrace(traceId)
       .then(setTrace)
       .catch(console.error)
       .finally(() => setLoading(false));
-  };
+  }, [traceId]);
 
-  useEffect(loadTrace, [traceId]);
+  useEffect(loadTrace, [loadTrace]);
+
+  useHitlStream(traceId, loadTrace);
 
   if (loading) return <div className="text-gray-400">Loading trace...</div>;
   if (!trace) return <div className="text-red-400">Trace not found</div>;

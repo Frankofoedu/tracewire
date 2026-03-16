@@ -7,11 +7,13 @@ using Tracewire.Application.Services;
 using Tracewire.Domain.Entities;
 using Tracewire.Infrastructure;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<TracewireDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddSingleton<HitlNotificationService>();
 builder.Services.AddScoped<TraceService>();
 builder.Services.AddScoped<EventService>();
 
@@ -47,6 +49,7 @@ app.MapGet("/v1/health", async (TracewireDbContext db) =>
 
 app.MapTraceEndpoints();
 app.MapEventEndpoints();
+app.MapHitlStreamEndpoints();
 
 using (var scope = app.Services.CreateScope())
 {
