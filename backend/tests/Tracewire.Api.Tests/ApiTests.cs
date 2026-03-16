@@ -175,4 +175,108 @@ public class ApiTests : IAsyncLifetime
         });
         Assert.Equal(HttpStatusCode.OK, resumeResp.StatusCode);
     }
+
+    [Fact]
+    public async Task SseStream_ReceivesPauseNotification()
+    {
+        var traceResp = await _client.PostAsJsonAsync("/v1/traces", new { agentName = "sse_test" });
+        var trace = await traceResp.Content.ReadFromJsonAsync<TraceResponse>(JsonOpts);
+
+        var eventResp = await _client.PostAsJsonAsync("/v1/events", new
+        {
+            traceId = trace!.Id,
+            eventType = "Prompt",
+            depth = 0
+        });
+        var evt = await eventResp.Content.ReadFromJsonAsync<EventResponse>(JsonOpts);
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var sseClient = _factory.CreateClient();
+        sseClient.DefaultRequestHeaders.Add("X-API-Key", TestApiKey);
+        var sseRequest = new HttpRequestMessage(HttpMethod.Get, $"/v1/traces/{trace.Id}/stream");
+        var sseResponse = await sseClient.SendAsync(sseRequest, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+        Assert.Equal(HttpStatusCode.OK, sseResponse.StatusCode);
+        Assert.Equal("text/event-stream", sseResponse.Content.Headers.ContentType?.MediaType);
+
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(300);
+            await _client.PostAsJsonAsync($"/v1/events/{evt!.Id}/pause", new { timeoutSeconds = 30 });
+        });
+
+        using var stream = await sseResponse.Content.ReadAsStreamAsync(cts.Token);
+        using var reader = new StreamReader(stream);
+        var buffer = "";
+        var received = false;
+
+        while (!cts.IsCancellationRequested)
+        {
+            var chunk = new char[4096];
+            var read = await reader.ReadAsync(chunk.AsMemory(), cts.Token);
+            if (read == 0) break;
+            buffer += new string(chunk, 0, read);
+
+            if (buffer.Contains("\"status\":\"Paused\""))
+            {
+                received = true;
+                break;
+            }
+        }
+
+        Assert.True(received, "Should receive Paused notification via SSE");
+    }
+
+    [Fact]
+    public async Task SseStream_ReceivesResumeNotification()
+    {
+        var traceResp = await _client.PostAsJsonAsync("/v1/traces", new { agentName = "sse_resume_test" });
+        var trace = await traceResp.Content.ReadFromJsonAsync<TraceResponse>(JsonOpts);
+
+        var eventResp = await _client.PostAsJsonAsync("/v1/events", new
+        {
+            traceId = trace!.Id,
+            eventType = "ToolCall",
+            depth = 0
+        });
+        var evt = await eventResp.Content.ReadFromJsonAsync<EventResponse>(JsonOpts);
+
+        await _client.PostAsJsonAsync($"/v1/events/{evt!.Id}/pause", new { timeoutSeconds = 60 });
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var sseClient = _factory.CreateClient();
+        sseClient.DefaultRequestHeaders.Add("X-API-Key", TestApiKey);
+        var sseRequest = new HttpRequestMessage(HttpMethod.Get, $"/v1/traces/{trace.Id}/stream");
+        var sseResponse = await sseClient.SendAsync(sseRequest, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(300);
+            await _client.PostAsJsonAsync($"/v1/events/{evt.Id}/resume", new
+            {
+                decision = "approve",
+                comments = "auto approved"
+            });
+        });
+
+        using var stream = await sseResponse.Content.ReadAsStreamAsync(cts.Token);
+        using var reader = new StreamReader(stream);
+        var buffer = "";
+        var received = false;
+
+        while (!cts.IsCancellationRequested)
+        {
+            var chunk = new char[4096];
+            var read = await reader.ReadAsync(chunk.AsMemory(), cts.Token);
+            if (read == 0) break;
+            buffer += new string(chunk, 0, read);
+
+            if (buffer.Contains("\"status\":\"Resumed\""))
+            {
+                received = true;
+                break;
+            }
+        }
+
+        Assert.True(received, "Should receive Resumed notification via SSE");
+    }
 }

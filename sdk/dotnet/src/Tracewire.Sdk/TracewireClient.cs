@@ -7,6 +7,8 @@ namespace Tracewire.Sdk;
 public class TracewireClient : IDisposable
 {
     private readonly HttpClient _http;
+    internal string BaseUrl { get; }
+    internal string ApiKey { get; }
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -16,7 +18,9 @@ public class TracewireClient : IDisposable
 
     public TracewireClient(string baseUrl = "http://localhost:5185", string apiKey = "")
     {
-        _http = new HttpClient { BaseAddress = new Uri(baseUrl.TrimEnd('/')) };
+        BaseUrl = baseUrl.TrimEnd('/');
+        ApiKey = apiKey;
+        _http = new HttpClient { BaseAddress = new Uri(BaseUrl) };
         _http.DefaultRequestHeaders.Add("X-API-Key", apiKey);
     }
 

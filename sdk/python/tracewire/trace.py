@@ -3,14 +3,13 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import time
 from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator
 from uuid import UUID
 
 from tracewire.buffer import EventBuffer
 from tracewire.client import TracewireClient
-from tracewire.models import CreateEventRequest, EventType, HitlStatus
+from tracewire.models import CreateEventRequest, EventType
 
 logger = logging.getLogger("Tracewire")
 
@@ -68,20 +67,33 @@ class TraceContext:
 
         await self._client.pause_event(event_id, timeout)
 
-        deadline = time.monotonic() + timeout
-        while time.monotonic() < deadline:
-            trace_data = await self._client.get_trace(self.trace_id)
-            for event in trace_data.get("events", []):
-                if event.get("id") == str(event_id) and event.get("hitlStatus") == HitlStatus.RESUMED:
-                    decision_raw = event.get("hitlDecision")
-                    if decision_raw:
-                        decision = json.loads(decision_raw) if isinstance(decision_raw, str) else decision_raw
-                        return decision.get("decision", "approve")
-                    return "approve"
-            await asyncio.sleep(2)
+        try:
+            return await asyncio.wait_for(
+                self._wait_via_sse(event_id), timeout=timeout
+            )
+        except asyncio.TimeoutError:
+            logger.warning("HITL timeout reached, applying fallback: %s", fallback)
+            return fallback
 
-        logger.warning("HITL timeout reached, applying fallback: %s", fallback)
-        return fallback
+    async def _wait_via_sse(self, event_id: UUID) -> str:
+        url = f"{self._client._base_url}/v1/traces/{self.trace_id}/stream"
+        params = {"apiKey": self._client._api_key}
+        async with self._client._http.stream("GET", url, params=params) as resp:
+            buffer = ""
+            async for chunk in resp.aiter_text():
+                buffer += chunk
+                while "\n\n" in buffer:
+                    message, buffer = buffer.split("\n\n", 1)
+                    for line in message.split("\n"):
+                        if line.startswith("data: "):
+                            data = json.loads(line[6:])
+                            if data.get("eventId") == str(event_id) and data.get("status") == "Resumed":
+                                decision_raw = data.get("decision")
+                                if decision_raw:
+                                    decision = json.loads(decision_raw) if isinstance(decision_raw, str) else decision_raw
+                                    return decision.get("decision", "approve")
+                                return "approve"
+        return "approve"
 
 
 @asynccontextmanager

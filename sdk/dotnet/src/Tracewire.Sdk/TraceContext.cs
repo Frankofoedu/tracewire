@@ -61,25 +61,67 @@ public sealed class TraceContext : IAsyncDisposable
 
         await _client.PauseEventAsync(lastEvent.Id, timeoutSeconds);
 
-        var deadline = DateTime.UtcNow.AddSeconds(timeoutSeconds);
-        while (DateTime.UtcNow < deadline)
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
+        try
         {
-            var trace = await _client.GetTraceAsync(TraceId);
-            var evt = trace.Events.FirstOrDefault(e => e.Id == lastEvent.Id);
-            if (evt?.HitlStatus == HitlStatus.Resumed)
+            return await WaitViaSseAsync(lastEvent.Id, cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return fallback;
+        }
+    }
+
+    private async Task<string> WaitViaSseAsync(Guid eventId, CancellationToken ct)
+    {
+        var url = $"{_client.BaseUrl}/v1/traces/{TraceId}/stream?apiKey={Uri.EscapeDataString(_client.ApiKey)}";
+        using var http = new HttpClient();
+        using var resp = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
+        resp.EnsureSuccessStatusCode();
+
+        using var stream = await resp.Content.ReadAsStreamAsync(ct);
+        using var reader = new StreamReader(stream);
+        var buffer = "";
+
+        while (!ct.IsCancellationRequested)
+        {
+            var chunk = new char[4096];
+            var read = await reader.ReadAsync(chunk.AsMemory(), ct);
+            if (read == 0) break;
+            buffer += new string(chunk, 0, read);
+
+            while (buffer.Contains("\n\n"))
             {
-                if (evt.HitlDecision is not null)
+                var idx = buffer.IndexOf("\n\n", StringComparison.Ordinal);
+                var message = buffer[..idx];
+                buffer = buffer[(idx + 2)..];
+
+                foreach (var line in message.Split('\n'))
                 {
-                    var doc = JsonDocument.Parse(evt.HitlDecision);
-                    if (doc.RootElement.TryGetProperty("decision", out var dec))
-                        return dec.GetString() ?? "approve";
+                    if (!line.StartsWith("data: ")) continue;
+                    var json = line[6..];
+                    var doc = JsonDocument.Parse(json);
+                    var root = doc.RootElement;
+
+                    if (root.TryGetProperty("eventId", out var eid) &&
+                        eid.GetString() == eventId.ToString() &&
+                        root.TryGetProperty("status", out var status) &&
+                        status.GetString() == "Resumed")
+                    {
+                        if (root.TryGetProperty("decision", out var decisionRaw) &&
+                            decisionRaw.ValueKind == JsonValueKind.String)
+                        {
+                            var decDoc = JsonDocument.Parse(decisionRaw.GetString()!);
+                            if (decDoc.RootElement.TryGetProperty("decision", out var dec))
+                                return dec.GetString() ?? "approve";
+                        }
+                        return "approve";
+                    }
                 }
-                return "approve";
             }
-            await Task.Delay(2000);
         }
 
-        return fallback;
+        throw new OperationCanceledException();
     }
 
     public async ValueTask DisposeAsync()

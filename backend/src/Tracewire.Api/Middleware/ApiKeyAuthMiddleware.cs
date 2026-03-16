@@ -18,7 +18,8 @@ public class ApiKeyAuthMiddleware(RequestDelegate next)
         }
 
         var apiKey = context.Request.Headers["X-API-Key"].FirstOrDefault()
-            ?? context.Request.Headers.Authorization.FirstOrDefault()?.Replace("Bearer ", "");
+            ?? context.Request.Headers.Authorization.FirstOrDefault()?.Replace("Bearer ", "")
+            ?? context.Request.Query["apiKey"].FirstOrDefault();
 
         if (string.IsNullOrEmpty(apiKey))
         {

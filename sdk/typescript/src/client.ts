@@ -7,8 +7,8 @@ import type {
 } from "./models.js";
 
 export class TracewireClient {
-  private baseUrl: string;
-  private apiKey: string;
+  readonly baseUrl: string;
+  readonly apiKey: string;
 
   constructor(baseUrl = "http://localhost:5185", apiKey = "") {
     this.baseUrl = baseUrl.replace(/\/$/, "");
